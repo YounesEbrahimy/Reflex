@@ -29,9 +29,6 @@ public class GameService : IInitializable
 }
 ```
 
-### How & When it Executes
-When the container resolves a type or factory (Singleton, Scoped, or Transient), it performs construction, runs attribute injection, and then checks if the resolved instance implements `IInitializable`. If it does, `Initialize()` is invoked.
-
 > [!NOTE]
 > **Exceptions (When `Initialize()` is NOT called):**
 > * **Pre-existing Instances (`BindInstance` / `BindInstanceTo`)**: Since these objects are created outside the container, the container does not control their lifecycle or invoke initialization.
@@ -173,7 +170,7 @@ When binding a factory, you can enable `hasFactoryScope: true`. This creates a c
        public override void InstallBindings(ContainerBuilder builder)
        {
            // Register local systems specific to this prefab instance
-           builder.Bind<BossHealthSystem>(Lifetime.Scoped);
+           builder.Bind<BossHealthSystem>();
        }
    }
    ```
