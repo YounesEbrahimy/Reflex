@@ -219,24 +219,25 @@ public class GameInstaller : MonoBehaviour, IInstaller
     public void InstallBindings(ContainerBuilder builder)
     {
         // 1. Self Binding
-        builder.Bind<SaveSystem>(Lifetime.Singleton);
+        builder.Bind<SaveSystem>();
 
         // 2. Contract Binding (Single contract)
-        builder.Bind<IInputManager, UnityInputManager>(Lifetime.Singleton);
+        builder.Bind<IInputManager, UnityInputManager>();
 
         // 3. Contract Binding (Multiple contracts)
-        builder.Bind<IShooter, IMover, PlayerController>(Lifetime.Singleton);
+        builder.Bind<IShooter, IMover, PlayerController>();
 
         // 4. Interface Autodiscovery
-        builder.BindInterFaces<NetworkManager>(Lifetime.Singleton);
-        builder.BindInterFacesAndSelf<GameLoop>(Lifetime.Singleton);
+        builder.BindInterFaces<NetworkManager>();
+        builder.BindInterFacesAndSelf<GameLoop>();
 
         // 5. Existing Instance Bindings
         builder.BindInstance(new AppConfig { Version = "1.0.0" });
+        // or use their interface
         builder.BindInstanceTo<IConfig>(new AppConfig());
 
         // 6. Mono Factory Bindings
-        builder.BindMonoFactory<Enemy, EnemyFactory>(enemyPrefab, hasFactoryScope: false);
+        builder.BindMonoFactory<Enemy, EnemyFactory>(enemyPrefab);
     }
 }
 ```
