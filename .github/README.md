@@ -19,6 +19,23 @@ This fork brings signature changes along with new features and quality-of-life (
 
 ---
 
+## 💾 Installation
+
+### Via Unity Package Manager (Git URL)
+
+1. Open **Window → Package Manager**
+2. Click the **+** button → **Add package from git URL ...**
+3. Enter:
+   ```
+   https://github.com/YounesEbrahimy/Reflex.git?path=/Assets/Reflex/#14.3.1
+   ```
+
+### Manual
+
+Download the latest .unitypackage file form [Releases](https://github.com/YounesEbrahimy/Reflex/releases), And import it in your project.
+
+---
+
 ## 1. ⚙️ `IInitializable` Lifecycle
 
 This fork introduces the `IInitializable` interface, providing a standardized way to execute initialization logic automatically after an object is resolved and injected.
