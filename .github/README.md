@@ -8,7 +8,7 @@ This repository is a fork of the original [Reflex](https://github.com/gustavopsa
 
 This fork is maintained in alignment with the original repository. All general credits go to the original author, [Gustavo Santos](https://github.com/gustavopsantos).
 
-This fork brings signature changes along with new features and quality-of-life improvements.
+This fork brings signature changes along with new features and quality-of-life (QoL) improvements.
 
 ---
 
@@ -29,6 +29,9 @@ public class GameService : IInitializable
 }
 ```
 
+### How & When it Executes
+When the container resolves a type or factory (Singleton, Scoped, or Transient), it performs construction, runs attribute injection, and then checks if the resolved instance implements `IInitializable`. If it does, `Initialize()` is invoked.
+
 > [!NOTE]
 > **Exceptions (When `Initialize()` is NOT called):**
 > * **Pre-existing Instances (`BindInstance` / `BindInstanceTo`)**: Since these objects are created outside the container, the container does not control their lifecycle or invoke initialization.
@@ -41,19 +44,47 @@ public class GameService : IInitializable
 
 We introduced a comprehensive system for instantiating Unity `MonoBehaviour` prefabs with dependency injection, supporting both parameterless creation and runtime data propagation, alongside isolated scoping.
 
-### The Two Factory Types
-To create a factory, inherit from one of the two abstract base classes:
+### The Two Factory Types & Installer Bindings
+To create and register a Mono Factory, follow the steps below:
 
 #### A. Standard `MonoFactory<T>`
 Used to instantiate prefabs without passing any runtime parameters.
+
+1. **Define the Component & Factory**:
 ```csharp
 using Reflex.Factories.Mono;
 using UnityEngine;
 
-// Define your factory
-public class EnemyFactory : MonoFactory<Enemy> { }
+public class Enemy : MonoBehaviour
+{
+    [Inject] private readonly IAudioService _audioService;
+}
 
-// Usage
+// Define the factory class inheriting from MonoFactory<T>
+public class EnemyFactory : MonoFactory<Enemy> { }
+```
+
+2. **Register in Installer**:
+Use `BindMonoFactory` in your installer to register the factory, providing the reference to your prefab:
+```csharp
+using Reflex.Core;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    [SerializeField] private Enemy enemyPrefab;
+
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        // Registers EnemyFactory in the container, linked to enemyPrefab
+        builder.BindMonoFactory<Enemy, EnemyFactory>(enemyPrefab);
+    }
+}
+```
+
+3. **Usage**:
+Resolve and use the factory anywhere dependencies are injected:
+```csharp
 public class SpawnManager : MonoBehaviour
 {
     [Inject] private readonly EnemyFactory _enemyFactory;
@@ -65,31 +96,55 @@ public class SpawnManager : MonoBehaviour
 }
 ```
 
+---
+
 #### B. Parameterized `MonoFactory<TData, T>`
 Used to pass runtime parameters (`TData`) to the created prefab. The prefab component must implement `IFactoryData<TData>`.
+
+1. **Define the Data, Component, & Factory**:
 ```csharp
 using Reflex.Factories.Mono;
 using UnityEngine;
 
-// 1. Define the data container
+// Define the data container
 public struct EnemyData
 {
     public int Health;
     public float Speed;
 }
 
-// 2. Implement the component on your prefab
+// Component must implement IFactoryData<TData>
 public class Enemy : MonoBehaviour, IFactoryData<EnemyData>
 {
-    public EnemyData Data { get; set; } // Set automatically by the factory
+    public EnemyData Data { get; set; } // Automatically populated by the factory
     
-    [Inject] private readonly IAudioService _audioService; // Resolved from DI
+    [Inject] private readonly IAudioService _audioService;
 }
 
-// 3. Define the factory
+// Define the factory class inheriting from MonoFactory<TData, T>
 public class EnemyWithDataFactory : MonoFactory<EnemyData, Enemy> { }
+```
 
-// Usage
+2. **Register in Installer**:
+Use `BindMonoFactory` to register the parameterized factory:
+```csharp
+using Reflex.Core;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    [SerializeField] private Enemy enemyPrefab;
+
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        builder.BindMonoFactory<Enemy, EnemyWithDataFactory>(enemyPrefab);
+    }
+}
+```
+
+3. **Usage**:
+Pass the runtime data during instantiation:
+```csharp
 public class SpawnManager : MonoBehaviour
 {
     [Inject] private readonly EnemyWithDataFactory _enemyFactory;
@@ -101,6 +156,8 @@ public class SpawnManager : MonoBehaviour
     }
 }
 ```
+
+---
 
 ### 🌐 Factory Scope (Isolated Scopes)
 When binding a factory, you can enable `hasFactoryScope: true`. This creates a completely isolated child container scope unique to that cloned instance.
@@ -120,8 +177,24 @@ When binding a factory, you can enable `hasFactoryScope: true`. This creates a c
        }
    }
    ```
-3. **Data Injection**: If using `MonoFactory<TData, T>`, the `TData` instance is automatically registered into the child scope's container, allowing child components of the prefab to inject `TData` directly.
-4. **Automatic Disposal**: When the cloned GameObject is destroyed, `FactoryScope.OnDestroy()` automatically disposes of the child container, cleaning up scoped disposables and preventing memory leaks.
+3. **Register in Installer**:
+   Set `hasFactoryScope` to `true` when registering in your installer:
+   ```csharp
+   using Reflex.Core;
+   using UnityEngine;
+
+   public class BossInstaller : MonoBehaviour, IInstaller
+   {
+       [SerializeField] private Boss bossPrefab; // Attached BossFactoryScope
+
+       public void InstallBindings(ContainerBuilder builder)
+       {
+           builder.BindMonoFactory<Boss, BossFactory>(bossPrefab, hasFactoryScope: true);
+       }
+   }
+   ```
+4. **Data Injection**: If using `MonoFactory<TData, T>`, the `TData` instance is automatically registered into the child scope's container, allowing child components of the prefab to inject `TData` directly.
+5. **Automatic Disposal**: When the cloned GameObject is destroyed, `FactoryScope.OnDestroy()` automatically disposes of the child container, cleaning up scoped disposables and preventing memory leaks.
 
 ---
 
@@ -129,16 +202,16 @@ When binding a factory, you can enable `hasFactoryScope: true`. This creates a c
 
 To provide a cleaner, more fluent syntax, the original `Register*` methods in `ContainerBuilder` have been made `internal`. A new public set of `Bind` methods replaces them.
 
-### Quick Comparison
-| Old API | New Clean API | Description |
-| :--- | :--- | :--- |
-| `RegisterType(type, ...)` | `Bind<TConcrete>(...)` | Binds a type to itself. |
-| `RegisterType(type, contracts, ...)` | `Bind<TContract, TConcrete>(...)` | Binds a concrete type to one or more interface contracts (up to 7). |
-| `RegisterValue(value)` | `BindInstance(value)` | Registers an existing object instance as a singleton. |
-| `RegisterValue(value, contracts)` | `BindInstanceTo<T>(value)` | Registers an existing instance to a specific interface contract. |
-| N/A | `BindInterFaces<TConcrete>(...)` | Binds a type to all interfaces it implements. |
-| N/A | `BindInterFacesAndSelf<TConcrete>(...)` | Binds a type to all interfaces it implements, plus itself. |
-| N/A | `BindMonoFactory<T, TFactory>(...)` | Registers a custom MonoBehaviour factory. |
+### Binding API Methods
+| Method Signature | Description |
+| :--- | :--- |
+| `Bind<TConcrete>(...)` | Binds a concrete type to itself. |
+| `Bind<TContract, TConcrete>(...)` | Binds a concrete type to a specific interface contract (supports overloads up to 7 contracts, e.g. `Bind<T1, T2, ..., TConcrete>`). |
+| `BindInstance(object instance)` | Registers an existing object instance as a singleton. |
+| `BindInstanceTo<T>(object instance)` | Registers an existing instance to a specific interface contract. |
+| `BindInterFaces<TConcrete>(...)` | Binds a type to all interfaces it implements. |
+| `BindInterFacesAndSelf<TConcrete>(...)` | Binds a type to all interfaces it implements, plus itself. |
+| `BindMonoFactory<T, TFactory>(...)` | Registers a custom MonoBehaviour factory. |
 
 ### Registration Examples
 ```csharp
