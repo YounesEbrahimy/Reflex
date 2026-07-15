@@ -1,6 +1,13 @@
 <p align="center">
   <img src="graphics/logo.png" width="250" alt="Reflex Logo">
 </p>
+<div align=center>
+
+![Unity Tests](https://github.com/YounesEbrahimy/Reflex/actions/workflows/test.yml/badge.svg)
+[![Releases](https://img.shields.io/github/release/younesebrahimy/reflex.svg)](https://github.com/YounesEbrahimy/Reflex/releases)
+[![Unity](https://img.shields.io/badge/Unity-2021+-yellow.svg)](https://unity3d.com/pt/get-unity/download/archive)
+
+</div>
 
 ---
 
