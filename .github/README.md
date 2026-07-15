@@ -8,4 +8,4 @@ This repository is a fork of the original [Reflex](https://github.com/gustavopsa
 
 This fork is maintained in alignment with the original repository. All general credits go to the original author, [Gustavo Santos](https://github.com/gustavopsantos).
 
-This fork brings signature changes along with new features and quality-of-life (QoL) improvements.
+This fork brings signature changes along with new features and quality-of-life improvements.
