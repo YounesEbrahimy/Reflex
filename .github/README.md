@@ -1,6 +1,13 @@
 <p align="center">
   <img src="graphics/logo.png" width="250" alt="Reflex Logo">
 </p>
+<div align=center>
+
+![Unity Tests](https://github.com/YounesEbrahimy/Reflex/actions/workflows/test.yml/badge.svg)
+[![Releases](https://img.shields.io/github/release/younesebrahimy/reflex.svg)](https://github.com/YounesEbrahimy/Reflex/releases)
+[![Unity](https://img.shields.io/badge/Unity-2021+-yellow.svg)](https://unity3d.com/pt/get-unity/download/archive)
+
+</div>
 
 ---
 
@@ -9,6 +16,23 @@ This repository is a fork of the original [Reflex](https://github.com/gustavopsa
 This fork is maintained in alignment with the original repository. All general credits go to the original author, [Gustavo Santos](https://github.com/gustavopsantos).
 
 This fork brings signature changes along with new features and quality-of-life (QoL) improvements.
+
+---
+
+## 💾 Installation
+
+### Via Unity Package Manager (Git URL)
+
+1. Open **Window → Package Manager**
+2. Click the **+** button → **Add package from git URL ...**
+3. Enter:
+   ```
+   https://github.com/YounesEbrahimy/Reflex.git?path=/Assets/Reflex/#14.3.1
+   ```
+
+### Manual
+
+Download the latest .unitypackage file form [Releases](https://github.com/YounesEbrahimy/Reflex/releases), And import it in your project.
 
 ---
 
