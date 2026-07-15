@@ -2,6 +2,7 @@
 using Reflex.Core;
 using Reflex.Enums;
 using Reflex.Injectors;
+using Reflex.Generics.Interfaces;
 
 namespace Reflex.Resolvers
 {
@@ -30,6 +31,7 @@ namespace Reflex.Resolvers
                 _instance = _factory.Invoke(resolvingContainer);
                 DeclaringContainer.Disposables.TryAdd(_instance);
                 AttributeInjector.Inject(_instance, resolvingContainer);
+                if (_instance is IInitializable initializable) initializable.Initialize();
                 Diagnosis.RegisterInstance(this, _instance);
             }
 

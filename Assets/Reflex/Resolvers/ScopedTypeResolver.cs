@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Reflex.Core;
 using Reflex.Enums;
+using Reflex.Generics.Interfaces;
 
 namespace Reflex.Resolvers
 {
@@ -29,9 +30,10 @@ namespace Reflex.Resolvers
                 instance = resolvingContainer.Construct(_concreteType);
                 _instances.Add(resolvingContainer, instance);
                 resolvingContainer.Disposables.TryAdd(instance);
+                if (instance is IInitializable initializable) initializable.Initialize();
                 Diagnosis.RegisterInstance(this, instance);
             }
-            
+
             return instance;
         }
 

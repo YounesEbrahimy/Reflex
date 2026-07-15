@@ -18,11 +18,13 @@ namespace Reflex.Core
         internal List<Container> Children { get; } = new();
         internal Dictionary<Type, List<IResolver>> ResolversByContract { get; }
         internal DisposableCollection Disposables { get; }
+        internal bool IsDisposed { get; private set; } = false;
 #if UNITY_EDITOR
         internal static readonly List<Container> RootContainers = new();
 #endif
-        
-        internal Container(string name, Container parent, Dictionary<Type, List<IResolver>> resolversByContract, DisposableCollection disposables)
+
+        internal Container(string name, Container parent, Dictionary<Type, List<IResolver>> resolversByContract,
+            DisposableCollection disposables)
         {
             Diagnosis.RegisterBuildCallSite(this);
             Name = name;
@@ -52,6 +54,8 @@ namespace Reflex.Core
 
         public void Dispose()
         {
+            // Prevents double disposals on complex multi-level graphs!
+            if (IsDisposed) return;
             foreach (var child in Children.Reversed())
             {
                 child.Dispose();
@@ -60,6 +64,7 @@ namespace Reflex.Core
             Parent?.Children.Remove(this);
             ResolversByContract.Clear();
             Disposables.Dispose();
+            IsDisposed = true;
             ReflexLogger.Log($"Container {Name} disposed", LogLevel.Info);
         }
 
@@ -70,7 +75,7 @@ namespace Reflex.Core
             var scoped = builder.Build();
             return scoped;
         }
-        
+
         public T Construct<T>()
         {
             return (T)Construct(typeof(T));
@@ -79,10 +84,10 @@ namespace Reflex.Core
         public object Construct(Type concrete)
         {
             var instance = ConstructorInjector.Construct(concrete, this);
-            AttributeInjector.Inject(instance, this);   
+            AttributeInjector.Inject(instance, this);
             return instance;
         }
-        
+
         public object Resolve(Type type)
         {
             if (type.IsEnumerable(out var elementType))
@@ -100,7 +105,7 @@ namespace Reflex.Core
         {
             return (TContract)Resolve(typeof(TContract));
         }
-        
+
         public object Single(Type type)
         {
             return GetResolvers(type).Single().Resolve(this);
@@ -138,7 +143,7 @@ namespace Reflex.Core
         public IEnumerable<TContract> All<TContract>()
         {
             return ResolversByContract.TryGetValue(typeof(TContract), out var resolvers)
-                ? resolvers.Select(resolver => (TContract) resolver.Resolve(this)).ToArray()
+                ? resolvers.Select(resolver => (TContract)resolver.Resolve(this)).ToArray()
                 : Enumerable.Empty<TContract>();
         }
 
@@ -151,7 +156,7 @@ namespace Reflex.Core
 
             throw new UnknownContractException(contract);
         }
-        
+
         private void OverrideSelfInjection()
         {
             ResolversByContract[typeof(Container)] = new List<IResolver> { new SingletonValueResolver(this) };

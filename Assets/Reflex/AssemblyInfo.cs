@@ -1,6 +1,8 @@
 using System.Runtime.CompilerServices;
 
 [assembly:InternalsVisibleTo("Reflex.Editor")]
+[assembly:InternalsVisibleTo("Reflex.Benchmark")]
+[assembly:InternalsVisibleTo("Reflex.Sample")]
 [assembly:InternalsVisibleTo("Reflex.EditModeTests")]
 [assembly:InternalsVisibleTo("Reflex.PlayModeTests")]
 [assembly:InternalsVisibleTo("Reflex.IL2CPP.Tests")]
