@@ -1,4 +1,4 @@
-namespace Reflex.Factories.Mono
+namespace Reflex.Factories
 {
     public interface IFactoryData<TData>
     {

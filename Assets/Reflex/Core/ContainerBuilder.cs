@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Reflex.Enums;
 using Reflex.Factories.Mono;
+using Reflex.Factories.Plain;
 using Reflex.Generics;
 using Reflex.Resolvers;
 using UnityEngine;
@@ -273,6 +274,20 @@ namespace Reflex.Core
         #endregion
 
         #region Factories
+
+        public void BindFactory<T, TFactory>(Lifetime lifeTime = Lifetime.Singleton,
+            Resolution resolution = Resolution.Lazy) where TFactory : BaseFactory<T>
+        {
+            RegisterFactory<TFactory>(CreateDefaultFactory, lifeTime, resolution);
+            return;
+
+            TFactory CreateDefaultFactory(Container container)
+            {
+                var factory = (TFactory)Activator.CreateInstance(typeof(TFactory));
+                factory.Setup(container);
+                return factory;
+            }
+        }
 
         public void BindMonoFactory<T, TFactory>(T original, bool hasFactoryScope = false,
             Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy)
