@@ -278,10 +278,10 @@ namespace Reflex.Core
         public void BindFactory<T, TFactory>(Lifetime lifeTime = Lifetime.Singleton,
             Resolution resolution = Resolution.Lazy) where TFactory : BaseFactory<T>
         {
-            RegisterFactory<TFactory>(CreateDefaultFactory, lifeTime, resolution);
+            RegisterFactory<TFactory>(CreateFactory, lifeTime, resolution);
             return;
 
-            TFactory CreateDefaultFactory(Container container)
+            TFactory CreateFactory(Container container)
             {
                 var factory = (TFactory)Activator.CreateInstance(typeof(TFactory));
                 factory.Setup(container);
