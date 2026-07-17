@@ -353,7 +353,7 @@ When binding a factory, you can enable `hasFactoryScope: true`. This creates a c
 | **Target Type** | C# POCO (`class`) | Unity component (`MonoBehaviour`) |
 | **Base Class** | `BaseFactory<T>` | `BaseMonoFactory<T>` |
 | **Instance Creation** | `Activator.CreateInstance` | `Object.Instantiate` (Prefab clone) |
-| **Unity Lifecycle** | N/A | Deactivates prefab during clone creation to prevent early Awake/OnEnable execution before injection is complete |
+| **Unity Lifecycle** | N/A | Awake/Start/OnEnable execution after injection |
 | **Factory Scoping** | No local scoping support | Supports `hasFactoryScope` to separate dependencies per clone instance |
 | **`IInitializable` Support** | Fully supports `IInitializable` | Does not run `IInitializable` on Unity components |
 
