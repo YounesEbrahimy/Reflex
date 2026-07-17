@@ -53,6 +53,9 @@ public class GameService : IInitializable
 }
 ```
 
+### How & When it Executes
+When the container resolves a type or factory (Singleton, Scoped, or Transient), it performs construction, runs attribute injection, and then checks if the resolved instance implements `IInitializable`. If it does, `Initialize()` is invoked.
+
 > [!NOTE]
 > **Exceptions (When `Initialize()` is NOT called):**
 > * **Pre-existing Instances (`BindInstance` / `BindInstanceTo`)**: Since these objects are created outside the container, the container does not control their lifecycle or invoke initialization.
@@ -61,7 +64,131 @@ public class GameService : IInitializable
 
 ---
 
-## 2. 🏗️ Mono Factories & Factory Scope
+## 2. 🏭 C# Plain Factories
+
+We introduced a comprehensive system for instantiating plain C# objects (POCOs) with dependency injection, supporting both parameterless creation and runtime data propagation.
+
+### The Two Factory Types & Installer Bindings
+To create and register a C# Plain Factory, follow the steps below:
+
+#### A. Standard `Factory<T>`
+Used to instantiate objects without passing any runtime parameters.
+
+1. **Define the Class & Factory**:
+```csharp
+using Reflex.Factories.Plain;
+
+public class Player
+{
+    [Inject] private readonly IInventoryService _inventoryService;
+}
+
+// Define the factory class inheriting from Factory<T>
+public class PlayerFactory : Factory<Player> { }
+```
+
+2. **Register in Installer**:
+Use `BindFactory` in your installer to register the factory:
+```csharp
+using Reflex.Core;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        // Registers PlayerFactory in the container
+        builder.BindFactory<Player, PlayerFactory>();
+    }
+}
+```
+
+3. **Usage**:
+Resolve and use the factory anywhere dependencies are injected:
+```csharp
+public class PlayerSpawner
+{
+    private readonly PlayerFactory _playerFactory;
+
+    public PlayerSpawner(PlayerFactory playerFactory)
+    {
+        _playerFactory = playerFactory;
+    }
+
+    public void Spawn()
+    {
+        Player player = _playerFactory.Create();
+    }
+}
+```
+
+---
+
+#### B. Parameterized `Factory<TData, T>`
+Used to pass runtime parameters (`TData`) to the created object. The target class must implement `IFactoryData<TData>`.
+
+1. **Define the Data, Class, & Factory**:
+```csharp
+using Reflex.Factories;
+using Reflex.Factories.Plain;
+
+// Define the data container
+public struct PlayerData
+{
+    public string Name;
+    public int Level;
+}
+
+// Target class must implement IFactoryData<TData>
+public class Player : IFactoryData<PlayerData>
+{
+    public PlayerData Data { get; set; } // Automatically populated by the factory
+    
+    [Inject] private readonly IInventoryService _inventoryService;
+}
+
+// Define the factory class inheriting from Factory<TData, T>
+public class PlayerWithDataFactory : Factory<PlayerData, Player> { }
+```
+
+2. **Register in Installer**:
+Use `BindFactory` to register the parameterized factory:
+```csharp
+using Reflex.Core;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        builder.BindFactory<Player, PlayerWithDataFactory>();
+    }
+}
+```
+
+3. **Usage**:
+Pass the runtime data during instantiation:
+```csharp
+public class PlayerSpawner
+{
+    private readonly PlayerWithDataFactory _playerFactory;
+
+    public PlayerSpawner(PlayerWithDataFactory playerFactory)
+    {
+        _playerFactory = playerFactory;
+    }
+
+    public void Spawn()
+    {
+        var data = new PlayerData { Name = "Hero", Level = 1 };
+        Player player = _playerFactory.Create(data);
+    }
+}
+```
+
+---
+
+## 3. 🏗️ Mono Factories & Factory Scope
 
 We introduced a comprehensive system for instantiating Unity `MonoBehaviour` prefabs with dependency injection, supporting both parameterless creation and runtime data propagation, alongside isolated scoping.
 
@@ -219,19 +346,33 @@ When binding a factory, you can enable `hasFactoryScope: true`. This creates a c
 
 ---
 
-## 3. 🔩 Updated Binding API
+### 📊 Key Differences: `BindFactory` vs. `BindMonoFactory`
+
+| Feature | `BindFactory` | `BindMonoFactory` |
+| :--- | :--- | :--- |
+| **Target Type** | C# POCO (`class`) | Unity component (`MonoBehaviour`) |
+| **Base Class** | `BaseFactory<T>` | `BaseMonoFactory<T>` |
+| **Instance Creation** | `Activator.CreateInstance` | `Object.Instantiate` (Prefab clone) |
+| **Unity Lifecycle** | N/A | Deactivates prefab during clone creation to prevent early Awake/OnEnable execution before injection is complete |
+| **Factory Scoping** | No local scoping support | Supports `hasFactoryScope` to separate dependencies per clone instance |
+| **`IInitializable` Support** | Fully supports `IInitializable` | Does not run `IInitializable` on Unity components |
+
+---
+
+## 4. 🔩 Updated Binding API
 
 To provide a cleaner, more fluent syntax, the original `Register*` methods in `ContainerBuilder` have been made `internal`. A new public set of `Bind` methods replaces them.
 
 ### Binding API Methods
 | Method Signature | Description |
 | :--- | :--- |
-| `Bind<TConcrete>(...)` | Binds a concrete type to itself. |
+| `Bind<TConcrete>(...)` | Binds a type to itself. |
 | `Bind<TContract, TConcrete>(...)` | Binds a concrete type to a specific interface contract (supports overloads up to 7 contracts, e.g. `Bind<T1, T2, ..., TConcrete>`). |
 | `BindInstance(object instance)` | Registers an existing object instance as a singleton. |
 | `BindInstanceTo<T>(object instance)` | Registers an existing instance to a specific interface contract. |
 | `BindInterFaces<TConcrete>(...)` | Binds a type to all interfaces it implements. |
 | `BindInterFacesAndSelf<TConcrete>(...)` | Binds a type to all interfaces it implements, plus itself. |
+| `BindFactory<T, TFactory>(...)` | Registers a custom plain C# class factory. |
 | `BindMonoFactory<T, TFactory>(...)` | Registers a custom MonoBehaviour factory. |
 
 ### Registration Examples
@@ -260,7 +401,10 @@ public class GameInstaller : MonoBehaviour, IInstaller
         // or use their interface
         builder.BindInstanceTo<IConfig>(new AppConfig());
 
-        // 6. Mono Factory Bindings
+        // 6. C# Plain Factory Bindings
+        builder.BindFactory<Player, PlayerFactory>();
+
+        // 7. Mono Factory Bindings
         builder.BindMonoFactory<Enemy, EnemyFactory>(enemyPrefab);
     }
 }
