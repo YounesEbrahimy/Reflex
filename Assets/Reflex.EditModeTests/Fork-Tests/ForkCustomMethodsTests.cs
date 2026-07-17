@@ -1,25 +1,49 @@
-using System;
+using Reflex.Exceptions;
 using FluentAssertions;
 using NUnit.Framework;
-using Reflex.Core;
 using Reflex.Enums;
-using Reflex.Exceptions;
+using Reflex.Core;
+using System;
 
 namespace Reflex.EditModeTests
 {
     internal class ForkCustomMethodsTests
     {
-        private interface I1 {}
-        private interface I2 {}
-        private interface I3 {}
-        private interface I4 {}
-        private interface I5 {}
-        private interface I6 {}
-        private interface I7 {}
+        private interface I1
+        {
+        }
 
-        private class MultiInterfaceClass : I1, I2, I3, I4, I5, I6, I7 {}
+        private interface I2
+        {
+        }
 
-        private class SimpleConcrete {}
+        private interface I3
+        {
+        }
+
+        private interface I4
+        {
+        }
+
+        private interface I5
+        {
+        }
+
+        private interface I6
+        {
+        }
+
+        private interface I7
+        {
+        }
+
+        private class MultiInterfaceClass : I1, I2, I3, I4, I5, I6, I7
+        {
+        }
+
+        private class SimpleConcrete
+        {
+        }
 
         [Test]
         public void Bind_SelfSingleton_ShouldReturnSameInstance()
@@ -72,7 +96,7 @@ namespace Reflex.EditModeTests
 
             var res1 = container.Single<I1>();
             var res2 = container.Single<I2>();
-            
+
             res1.Should().NotBeNull();
             res2.Should().NotBeNull();
             res1.Should().BeSameAs(res2);
@@ -186,7 +210,7 @@ namespace Reflex.EditModeTests
             var resolved = container.Single<I1>();
             resolved.Should().NotBeNull();
             resolved.Should().BeSameAs(instance);
-            
+
             Action resolveConcrete = () => container.Single<MultiInterfaceClass>();
             resolveConcrete.Should().Throw<UnknownContractException>();
         }
@@ -238,7 +262,7 @@ namespace Reflex.EditModeTests
 
             res1.Should().NotBeNull();
             concrete.Should().NotBeNull();
-            
+
             res1.Should().BeOfType<MultiInterfaceClass>();
             concrete.Should().BeOfType<MultiInterfaceClass>();
             res1.Should().BeSameAs(concrete);
