@@ -1,7 +1,7 @@
+using Reflex.DataTypes.interfaces;
 using Reflex.Generics.Interfaces;
 using Reflex.Factories.Plain;
 using Reflex.Attributes;
-using Reflex.Factories;
 using FluentAssertions;
 using NUnit.Framework;
 using Reflex.Enums;
@@ -40,7 +40,7 @@ namespace Reflex.EditModeTests
             public int Score;
         }
 
-        private class PlayerWithData : IFactoryData<SimplePlayerData>, IInitializable
+        private class PlayerWithData : IData<SimplePlayerData>, IInitializable
         {
             public SimplePlayerData Data { get; set; }
             [Inject] public IDependency dependency { get; set; }

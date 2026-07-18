@@ -1,3 +1,5 @@
+using Reflex.DataTypes.interfaces;
+
 namespace Reflex.Factories.Plain
 {
     public abstract class Factory<T> : BaseFactory<T>
@@ -9,7 +11,7 @@ namespace Reflex.Factories.Plain
         }
     }
 
-    public abstract class Factory<TData, T> : BaseFactory<T> where T : IFactoryData<TData>
+    public abstract class Factory<TData, T> : BaseFactory<T> where T : IData<TData>
     {
         public T Create(TData data)
         {

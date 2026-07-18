@@ -1,3 +1,4 @@
+using Reflex.DataTypes.interfaces;
 using UnityEngine;
 
 namespace Reflex.Factories.Mono
@@ -12,7 +13,7 @@ namespace Reflex.Factories.Mono
         }
     }
 
-    public abstract class MonoFactory<TData, T> : BaseMonoFactory<T> where T : MonoBehaviour, IFactoryData<TData>
+    public abstract class MonoFactory<TData, T> : BaseMonoFactory<T> where T : MonoBehaviour, IData<TData>
     {
         public T Create(TData data)
         {

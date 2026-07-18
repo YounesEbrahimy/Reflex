@@ -1,9 +1,9 @@
 using Resolution = Reflex.Enums.Resolution;
+using Reflex.DataTypes.interfaces;
 using Object = UnityEngine.Object;
 using Reflex.Factories.Mono;
 using Reflex.Attributes;
 using FluentAssertions;
-using Reflex.Factories;
 using NUnit.Framework;
 using Reflex.Enums;
 using Reflex.Core;
@@ -39,7 +39,7 @@ namespace Reflex.PlayModeTests
             public int ID;
         }
 
-        private class TestParameterizedMonoBehaviour : MonoBehaviour, IFactoryData<TestMonoData>
+        private class TestParameterizedMonoBehaviour : MonoBehaviour, IData<TestMonoData>
         {
             public TestMonoData Data { get; set; }
             [Inject] public IDependency dependency { get; set; }
@@ -98,7 +98,7 @@ namespace Reflex.PlayModeTests
             public void Dispose() => Disposed = true;
         }
 
-        private class Level1MonoBehaviour : MonoBehaviour, IFactoryData<Level1Data>
+        private class Level1MonoBehaviour : MonoBehaviour, IData<Level1Data>
         {
             public Level1Data Data { get; set; }
         }
@@ -111,7 +111,7 @@ namespace Reflex.PlayModeTests
         {
         }
 
-        private class Level2MonoBehaviour : MonoBehaviour, IFactoryData<Level2Data>
+        private class Level2MonoBehaviour : MonoBehaviour, IData<Level2Data>
         {
             [Inject] public Level1Data level1Data;
             public Level2Data Data { get; set; }
@@ -125,7 +125,7 @@ namespace Reflex.PlayModeTests
         {
         }
 
-        private class Level3MonoBehaviour : MonoBehaviour, IFactoryData<Level3Data>
+        private class Level3MonoBehaviour : MonoBehaviour, IData<Level3Data>
         {
             [Inject] public Level1Data level1Data;
             [Inject] public Level2Data level2Data;
