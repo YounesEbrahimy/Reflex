@@ -1,4 +1,4 @@
-using Reflex.DataTypes.interfaces;
+using Reflex.DataTypes.Interfaces;
 using Reflex.Generics.Interfaces;
 using Reflex.Factories.Plain;
 using Reflex.Attributes;
@@ -42,7 +42,7 @@ namespace Reflex.EditModeTests
 
         private class PlayerWithData : IData<SimplePlayerData>, IInitializable
         {
-            public SimplePlayerData Data { get; set; }
+            SimplePlayerData IData<SimplePlayerData>.Data { get; set; }
             [Inject] public IDependency dependency { get; set; }
             public bool Initialized { get; private set; } = false;
 
@@ -91,8 +91,8 @@ namespace Reflex.EditModeTests
             player.Should().NotBeNull();
             player.dependency.Should().NotBeNull();
             player.dependency.Should().BeOfType<Dependency>();
-            player.Data.Name.Should().Be("Joseph");
-            player.Data.Score.Should().Be(100);
+            ((IData<SimplePlayerData>)player).Data.Name.Should().Be("Joseph");
+            ((IData<SimplePlayerData>)player).Data.Score.Should().Be(100);
             player.Initialized.Should().BeTrue();
         }
     }

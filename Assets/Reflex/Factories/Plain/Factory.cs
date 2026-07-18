@@ -1,4 +1,4 @@
-using Reflex.DataTypes.interfaces;
+using Reflex.DataTypes.Interfaces;
 
 namespace Reflex.Factories.Plain
 {

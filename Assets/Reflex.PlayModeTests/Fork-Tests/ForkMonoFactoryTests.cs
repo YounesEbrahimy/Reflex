@@ -1,5 +1,5 @@
 using Resolution = Reflex.Enums.Resolution;
-using Reflex.DataTypes.interfaces;
+using Reflex.DataTypes.Interfaces;
 using Object = UnityEngine.Object;
 using Reflex.Factories.Mono;
 using Reflex.Attributes;
@@ -41,7 +41,7 @@ namespace Reflex.PlayModeTests
 
         private class TestParameterizedMonoBehaviour : MonoBehaviour, IData<TestMonoData>
         {
-            public TestMonoData Data { get; set; }
+            TestMonoData IData<TestMonoData>.Data { get; set; }
             [Inject] public IDependency dependency { get; set; }
         }
 
@@ -100,7 +100,7 @@ namespace Reflex.PlayModeTests
 
         private class Level1MonoBehaviour : MonoBehaviour, IData<Level1Data>
         {
-            public Level1Data Data { get; set; }
+            Level1Data IData<Level1Data>.Data { get; set; }
         }
 
         private class Level1Factory : MonoFactory<Level1Data, Level1MonoBehaviour>
@@ -114,7 +114,7 @@ namespace Reflex.PlayModeTests
         private class Level2MonoBehaviour : MonoBehaviour, IData<Level2Data>
         {
             [Inject] public Level1Data level1Data;
-            public Level2Data Data { get; set; }
+            Level2Data IData<Level2Data>.Data { get; set; }
         }
 
         private class Level2Factory : MonoFactory<Level2Data, Level2MonoBehaviour>
@@ -130,7 +130,7 @@ namespace Reflex.PlayModeTests
             [Inject] public Level1Data level1Data;
             [Inject] public Level2Data level2Data;
             [Inject] public ILevel2Service level2Service { get; set; }
-            public Level3Data Data { get; set; }
+            Level3Data IData<Level3Data>.Data { get; set; }
         }
 
         private class Level3Factory : MonoFactory<Level3Data, Level3MonoBehaviour>
@@ -220,8 +220,8 @@ namespace Reflex.PlayModeTests
                 clone.Should().NotBeNull();
                 clone.dependency.Should().NotBeNull();
                 clone.dependency.Should().BeOfType<Dependency>();
-                clone.Data.Label.Should().Be("Level1_Enemy");
-                clone.Data.ID.Should().Be(42);
+                ((IData<TestMonoData>)clone).Data.Label.Should().Be("Level1_Enemy");
+                ((IData<TestMonoData>)clone).Data.ID.Should().Be(42);
             }
             finally
             {
@@ -308,8 +308,8 @@ namespace Reflex.PlayModeTests
                 var data1 = new Level1Data();
                 clone1 = factory1.Create(data1);
                 clone1.Should().NotBeNull();
-                clone1.Data.Should().NotBeNull();
-                clone1.Data.Should().BeSameAs(data1);
+                ((IData<Level1Data>)clone1).Data.Should().NotBeNull();
+                ((IData<Level1Data>)clone1).Data.Should().BeSameAs(data1);
                 var scope1 = clone1.GetComponent<Level1Scope>();
                 scope1.Should().NotBeNull();
                 var container1 = scope1.scopeContainer;
@@ -319,8 +319,8 @@ namespace Reflex.PlayModeTests
                 var data2 = new Level2Data();
                 clone2 = factory2.Create(data2);
                 clone2.Should().NotBeNull();
-                clone2.Data.Should().NotBeNull();
-                clone2.Data.Should().BeSameAs(data2);
+                ((IData<Level2Data>)clone2).Data.Should().NotBeNull();
+                ((IData<Level2Data>)clone2).Data.Should().BeSameAs(data2);
                 clone2.level1Data.Should().NotBeNull();
                 clone2.level1Data.Should().BeSameAs(data1);
                 var scope2 = clone2.GetComponent<Level2Scope>();
@@ -332,8 +332,8 @@ namespace Reflex.PlayModeTests
                 var data3 = new Level3Data();
                 clone3 = factory3.Create(data3);
                 clone3.Should().NotBeNull();
-                clone3.Data.Should().NotBeNull();
-                clone3.Data.Should().BeSameAs(data3);
+                ((IData<Level3Data>)clone3).Data.Should().NotBeNull();
+                ((IData<Level3Data>)clone3).Data.Should().BeSameAs(data3);
                 clone3.level1Data.Should().NotBeNull();
                 clone3.level1Data.Should().BeSameAs(data1);
                 clone3.level2Data.Should().NotBeNull();
