@@ -5,6 +5,8 @@ using Reflex.Enums;
 using Reflex.Factories.Mono;
 using Reflex.Factories.Plain;
 using Reflex.Generics;
+using Reflex.Pools;
+using Reflex.Pools.Mono;
 using Reflex.Resolvers;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -301,6 +303,39 @@ namespace Reflex.Core
                 var factory = (TFactory)Activator.CreateInstance(typeof(TFactory));
                 factory.Setup(container, original, hasFactoryScope);
                 return factory;
+            }
+        }
+
+        #endregion
+
+        #region Pools
+
+        public void BindPool<T, TPool>(int minSize = 0, int maxSize = int.MaxValue, int preWarmSize = 0,
+            Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy) where TPool : BasePool<T>
+        {
+            RegisterFactory<TPool>(CreatePool, lifeTime, resolution);
+            return;
+
+            TPool CreatePool(Container container)
+            {
+                var pool = (TPool)Activator.CreateInstance(typeof(TPool));
+                pool.Setup(container, minSize, maxSize, preWarmSize);
+                return pool;
+            }
+        }
+
+        public void BindMonoPool<T, TPool>(T prefab, int minSize = 0, int maxSize = int.MaxValue, int preWarmSize = 0,
+            Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy)
+            where TPool : BaseMonoPool<T> where T : MonoBehaviour
+        {
+            RegisterFactory<TPool>(CreateMonoPool, lifeTime, resolution);
+            return;
+
+            TPool CreateMonoPool(Container container)
+            {
+                var pool = (TPool)Activator.CreateInstance(typeof(TPool));
+                pool.Setup(container, prefab, minSize, maxSize, preWarmSize);
+                return pool;
             }
         }
 
