@@ -11,9 +11,11 @@
 
 ---
 
-This repository is a fork of the original [Reflex](https://github.com/gustavopsantos/reflex) dependency injection library for Unity.
+This repository is a fork of the original [Reflex](https://github.com/gustavopsantos/reflex) dependency injection
+library for Unity.
 
-This fork is maintained in alignment with the original repository. All general credits go to the original author, [Gustavo Santos](https://github.com/gustavopsantos).
+This fork is maintained in alignment with the original repository. All general credits go to the original
+author, [Gustavo Santos](https://github.com/gustavopsantos).
 
 This fork brings signature changes along with new features and quality-of-life improvements.
 
@@ -32,13 +34,15 @@ This fork brings signature changes along with new features and quality-of-life i
 
 ### Manual
 
-Download the latest .unitypackage file form [Releases](https://github.com/YounesEbrahimy/Reflex/releases), And import it in your project.
+Download the latest .unitypackage file form [Releases](https://github.com/YounesEbrahimy/Reflex/releases), And import it
+in your project.
 
 ---
 
 ## 1. ⚙️ `IInitializable` Lifecycle
 
-This fork introduces the `IInitializable` interface, providing a standardized way to execute initialization logic automatically after an object is resolved and injected.
+This fork introduces the `IInitializable` interface, providing a standardized way to execute initialization logic
+automatically after an object is resolved and injected.
 
 ```csharp
 using Reflex.Generics.Interfaces;
@@ -54,27 +58,39 @@ public class GameService : IInitializable
 ```
 
 ### How & When it Executes
-When the container resolves a type or factory (Singleton, Scoped, or Transient), it performs construction, runs attribute injection, and then checks if the resolved instance implements `IInitializable`. If it does, `Initialize()` is invoked.
+
+When the container resolves a type or factory (Singleton, Scoped, or Transient), it performs construction, runs
+attribute injection, and then checks if the resolved instance implements `IInitializable`. If it does, `Initialize()` is
+invoked.
 
 > [!NOTE]
 > **Exceptions (When `Initialize()` is NOT called):**
-> * **Pre-existing Instances (`BindInstance` / `BindInstanceTo`)**: Since these objects are created outside the container, the container does not control their lifecycle or invoke initialization.
-> * **Manual Injection (`AttributeInjector.Inject`, `GameObjectInjector.Inject*`)**: When you manually inject dependencies into an existing object (e.g. MonoBehaviours placed in a scene), it is a target of injection but not a container-resolved instance, meaning `Initialize()` must be handled manually or via Unity lifecycle methods.
-> * **Instantiated Prefabs (from Mono Factories)**: Clone components instantiated by `MonoFactory` are injected recursively, not resolved from the container directly, meaning they rely on Unity's standard `Awake()` and `Start()` methods instead of `IInitializable`.
+> * **Pre-existing Instances (`BindInstance` / `BindInstanceTo`)**: Since these objects are created outside the
+    container, the container does not control their lifecycle or invoke initialization.
+> * **Manual Injection (`AttributeInjector.Inject`, `GameObjectInjector.Inject*`)**: When you manually inject
+    dependencies into an existing object (e.g. MonoBehaviours placed in a scene), it is a target of injection but not a
+    container-resolved instance, meaning `Initialize()` must be handled manually or via Unity lifecycle methods.
+> * **Instantiated Prefabs (from Mono Factories)**: Clone components instantiated by `MonoFactory` are injected
+    recursively, not resolved from the container directly, meaning they rely on Unity's standard `Awake()` and `Start()`
+    methods instead of `IInitializable`.
 
 ---
 
 ## 2. 🏭 Factories
 
-We introduced a comprehensive system for instantiating plain C# objects (POCOs) and Unity `MonoBehaviour` prefabs with dependency injection, supporting both parameterless creation and runtime data propagation.
+We introduced a comprehensive system for instantiating plain C# objects (POCOs) and Unity `MonoBehaviour` prefabs with
+dependency injection, supporting both parameterless creation and runtime data propagation.
 
 ### C# Plain Factories
+
 To create and register a C# Plain Factory, follow the steps below:
 
 #### A. Standard `Factory<T>`
+
 Used to instantiate objects without passing any runtime parameters.
 
 1. **Define the Class & Factory**:
+
 ```csharp
 using Reflex.Factories.Plain;
 
@@ -88,7 +104,8 @@ public class PlayerFactory : Factory<Player> { }
 ```
 
 2. **Register in Installer**:
-Use `BindFactory` in your installer to register the factory:
+   Use `BindFactory` in your installer to register the factory:
+
 ```csharp
 using Reflex.Core;
 using UnityEngine;
@@ -104,7 +121,8 @@ public class GameInstaller : MonoBehaviour, IInstaller
 ```
 
 3. **Usage**:
-Resolve and use the factory anywhere dependencies are injected:
+   Resolve and use the factory anywhere dependencies are injected:
+
 ```csharp
 public class PlayerSpawner
 {
@@ -123,12 +141,15 @@ public class PlayerSpawner
 ```
 
 #### B. Parameterized `Factory<TData, T>`
-Used to pass runtime parameters (`TData`) to the created object. The target class must implement `IFactoryData<TData>`.
+
+Used to pass runtime parameters (`TData`) to the created object. The target class must implement `IData<TData>`.
 
 1. **Define the Data, Class, & Factory**:
+
 ```csharp
 using Reflex.Factories;
 using Reflex.Factories.Plain;
+using Reflex.DataTypes.Interfaces;
 
 // Define the data container
 public struct PlayerData
@@ -137,8 +158,8 @@ public struct PlayerData
     public int Level;
 }
 
-// Target class must implement IFactoryData<TData>
-public class Player : IFactoryData<PlayerData>
+// Target class must implement IData<TData>
+public class Player : IData<PlayerData>
 {
     public PlayerData Data { get; set; } // Automatically populated by the factory
     
@@ -150,7 +171,8 @@ public class PlayerWithDataFactory : Factory<PlayerData, Player> { }
 ```
 
 2. **Register in Installer**:
-Use `BindFactory` to register the parameterized factory:
+   Use `BindFactory` to register the parameterized factory:
+
 ```csharp
 using Reflex.Core;
 using UnityEngine;
@@ -165,7 +187,8 @@ public class GameInstaller : MonoBehaviour, IInstaller
 ```
 
 3. **Usage**:
-Pass the runtime data during instantiation:
+   Pass the runtime data during instantiation:
+
 ```csharp
 public class PlayerSpawner
 {
@@ -187,12 +210,15 @@ public class PlayerSpawner
 ---
 
 ### Unity Mono Factories & Factory Scope
+
 To instantiate prefabs via Mono Factories, follow similar steps:
 
 #### A. Standard `MonoFactory<T>`
+
 Used to instantiate prefabs without passing any runtime parameters.
 
 1. **Define the Component & Factory**:
+
 ```csharp
 using Reflex.Factories.Mono;
 using UnityEngine;
@@ -207,7 +233,8 @@ public class EnemyFactory : MonoFactory<Enemy> { }
 ```
 
 2. **Register in Installer**:
-Use `BindMonoFactory` in your installer to register the factory, providing the reference to your prefab:
+   Use `BindMonoFactory` in your installer to register the factory, providing the reference to your prefab:
+
 ```csharp
 using Reflex.Core;
 using UnityEngine;
@@ -225,7 +252,8 @@ public class GameInstaller : MonoBehaviour, IInstaller
 ```
 
 3. **Usage**:
-Resolve and use the factory anywhere dependencies are injected:
+   Resolve and use the factory anywhere dependencies are injected:
+
 ```csharp
 public class SpawnManager : MonoBehaviour
 {
@@ -239,11 +267,14 @@ public class SpawnManager : MonoBehaviour
 ```
 
 #### B. Parameterized `MonoFactory<TData, T>`
-Used to pass runtime parameters (`TData`) to the created prefab. The prefab component must implement `IFactoryData<TData>`.
+
+Used to pass runtime parameters (`TData`) to the created prefab. The prefab component must implement `IData<TData>`.
 
 1. **Define the Data, Component, & Factory**:
+
 ```csharp
 using Reflex.Factories.Mono;
+using Reflex.DataTypes.Interfaces;
 using UnityEngine;
 
 // Define the data container
@@ -253,8 +284,8 @@ public struct EnemyData
     public float Speed;
 }
 
-// Component must implement IFactoryData<TData>
-public class Enemy : MonoBehaviour, IFactoryData<EnemyData>
+// Component must implement IData<TData>
+public class Enemy : MonoBehaviour, IData<EnemyData>
 {
     public EnemyData Data { get; set; } // Automatically populated by the factory
     
@@ -266,7 +297,8 @@ public class EnemyWithDataFactory : MonoFactory<EnemyData, Enemy> { }
 ```
 
 2. **Register in Installer**:
-Use `BindMonoFactory` to register the parameterized factory:
+   Use `BindMonoFactory` to register the parameterized factory:
+
 ```csharp
 using Reflex.Core;
 using UnityEngine;
@@ -283,7 +315,8 @@ public class GameInstaller : MonoBehaviour, IInstaller
 ```
 
 3. **Usage**:
-Pass the runtime data during instantiation:
+   Pass the runtime data during instantiation:
+
 ```csharp
 public class SpawnManager : MonoBehaviour
 {
@@ -298,7 +331,9 @@ public class SpawnManager : MonoBehaviour
 ```
 
 #### 🌐 Factory Scope (Isolated Scopes)
-When binding a Mono factory, you can enable `hasFactoryScope: true`. This creates a completely isolated child container scope unique to that cloned instance.
+
+When binding a Mono factory, you can enable `hasFactoryScope: true`. This creates a completely isolated child container
+scope unique to that cloned instance.
 
 1. **Setup**: Attach a custom class inheriting from `FactoryScope` to your prefab.
 2. **Install Local Bindings**: Implement `InstallBindings` to register dependencies specific to this cloned instance:
@@ -331,21 +366,26 @@ When binding a Mono factory, you can enable `hasFactoryScope: true`. This create
        }
    }
    ```
-4. **Data Injection**: If using `MonoFactory<TData, T>`, the `TData` instance is automatically registered into the child scope's container, allowing child components of the prefab to inject `TData` directly.
-5. **Automatic Disposal**: When the cloned GameObject is destroyed, `FactoryScope.OnDestroy()` automatically disposes of the child container, cleaning up scoped disposables and preventing memory leaks.
+4. **Data Injection**: If using `MonoFactory<TData, T>`, the `TData` instance is automatically registered into the child
+   scope's container, allowing child components of the prefab to inject `TData` directly.
+5. **Automatic Disposal**: When the cloned GameObject is destroyed, `FactoryScope.OnDestroy()` automatically disposes of
+   the child container, cleaning up scoped disposables and preventing memory leaks.
 
 ---
 
 ## 3. ♻️ Object Pooling
 
-We introduced a comprehensive object pooling system to reuse objects dynamically, supporting both plain C# objects and Unity `MonoBehaviour` prefabs, featuring automatic lifecycle management and data propagation.
+We introduced a comprehensive object pooling system to reuse objects dynamically, supporting both plain C# objects and
+Unity `MonoBehaviour` prefabs, featuring automatic lifecycle management and data propagation.
 
-### The Two Pool Types & Installer Bindings
+### The Four Pool Types & Installer Bindings
 
 #### A. Standard `Pool<T>`
-Used to pool plain C# objects. It optimally reuses instances without creating garbage. 
+
+Used to pool plain C# objects without any runtime parameters. It optimally reuses instances without creating garbage.
 
 1. **Define the Class & IPoolable**:
+
 ```csharp
 using Reflex.Pools.Interfaces;
 
@@ -358,19 +398,25 @@ public class Bullet : IPoolable
 ```
 
 2. **Register in Installer**:
-You can define initial pre-warm sizes, min sizes, and max sizes:
+   You can define initial pre-warm sizes, min sizes, and max sizes:
+
 ```csharp
 using Reflex.Core;
 using Reflex.Pools.Plain;
+using UnityEngine;
 
-public void InstallBindings(ContainerBuilder builder)
+public class GameInstaller : MonoBehaviour, IInstaller
 {
-    builder.BindPool<Bullet, Pool<Bullet>>(minSize: 0, maxSize: 50, preWarmSize: 10);
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        builder.BindPool<Bullet, Pool<Bullet>>(minSize: 0, maxSize: 50, preWarmSize: 10);
+    }
 }
 ```
 
 3. **Usage**:
-Inject the pool and use `Take()` and `Return(instance)`:
+   Inject the pool and use `Take()` and `Return(instance)`:
+
 ```csharp
 public class Weapon
 {
@@ -386,10 +432,69 @@ public class Weapon
 }
 ```
 
-#### B. Unity `MonoPool<T>`
-Used to pool Unity prefabs. It dynamically manages GameObject activation and child-parent hierarchies in the scene.
+#### B. Parameterized `Pool<TData, T>`
+
+Used to pool plain C# objects while passing runtime data (`TData`) when taking them from the pool. The target class must
+implement `IData<TData>`.
+
+1. **Define Data & Implement Interface**:
+
+```csharp
+using Reflex.DataTypes.Interfaces;
+using Reflex.Pools.Interfaces;
+
+public struct BulletData { public float Damage; }
+
+public class Bullet : IData<BulletData>, IPoolable
+{
+    public BulletData Data { get; set; } // Populated automatically before OnSpawn
+    
+    public void OnSpawn() { }
+    public void OnDespawn() { }
+}
+```
+
+2. **Register in Installer**:
+
+```csharp
+using Reflex.Core;
+using Reflex.Pools.Plain;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        builder.BindPool<Bullet, Pool<BulletData, Bullet>>();
+    }
+}
+```
+
+3. **Usage**:
+
+```csharp
+public class Weapon
+{
+    [Inject] private readonly Pool<BulletData, Bullet> _bulletPool;
+    
+    public void Fire()
+    {
+        var data = new BulletData { Damage = 10f };
+        Bullet bullet = _bulletPool.Take(data);
+        
+        // Later...
+        _bulletPool.Return(bullet);
+    }
+}
+```
+
+#### C. Standard `MonoPool<T>`
+
+Used to pool Unity prefabs without any runtime parameters. It dynamically manages GameObject activation and child-parent
+hierarchies in the scene.
 
 1. **Define the Component**:
+
 ```csharp
 using Reflex.Pools.Interfaces;
 using UnityEngine;
@@ -403,7 +508,8 @@ public class Enemy : MonoBehaviour, IPoolable
 ```
 
 2. **Register in Installer**:
-Bind the pool with the prefab reference:
+   Bind the pool with the prefab reference:
+
 ```csharp
 using Reflex.Core;
 using Reflex.Pools.Mono;
@@ -421,6 +527,7 @@ public class GameInstaller : MonoBehaviour, IInstaller
 ```
 
 3. **Usage**:
+
 ```csharp
 public class Spawner : MonoBehaviour
 {
@@ -436,10 +543,13 @@ public class Spawner : MonoBehaviour
 }
 ```
 
-#### C. Parameterized Pools (`Pool<TData, T>` / `MonoPool<TData, T>`)
-You can pass runtime data when taking objects from the pool. The target class must implement `IData<TData>`.
+#### D. Parameterized `MonoPool<TData, T>`
+
+Used to pool Unity prefabs while passing runtime data when taking objects from the pool. The component must implement
+`IData<TData>`.
 
 1. **Define Data & Implement Interface**:
+
 ```csharp
 using Reflex.DataTypes.Interfaces;
 using Reflex.Pools.Interfaces;
@@ -456,37 +566,66 @@ public class Enemy : MonoBehaviour, IData<EnemyData>, IPoolable
 }
 ```
 
-2. **Register and Use**:
-```csharp
-// 1. In Installer
-builder.BindMonoPool<Enemy, MonoPool<EnemyData, Enemy>>(enemyPrefab);
+2. **Register in Installer**:
 
-// 2. In Usage
-var data = new EnemyData { Health = 100 };
-Enemy enemy = _enemyPool.Take(data);
+```csharp
+using Reflex.Core;
+using Reflex.Pools.Mono;
+using UnityEngine;
+
+public class GameInstaller : MonoBehaviour, IInstaller
+{
+    [SerializeField] private Enemy enemyPrefab;
+
+    public void InstallBindings(ContainerBuilder builder)
+    {
+        builder.BindMonoPool<Enemy, MonoPool<EnemyData, Enemy>>(enemyPrefab);
+    }
+}
+```
+
+3. **Usage**:
+
+```csharp
+public class Spawner : MonoBehaviour
+{
+    [Inject] private readonly MonoPool<EnemyData, Enemy> _enemyPool;
+
+    public void Spawn()
+    {
+        var data = new EnemyData { Health = 100 };
+        Enemy enemy = _enemyPool.Take(data);
+        
+        // Later when it dies...
+        _enemyPool.Return(enemy);
+    }
+}
 ```
 
 ---
 
 ## 4. 🔩 Updated Binding API
 
-To provide a cleaner, more fluent syntax, the original `Register*` methods in `ContainerBuilder` have been made `internal`. A new public set of `Bind` methods replaces them.
+To provide a cleaner, more fluent syntax, the original `Register*` methods in `ContainerBuilder` have been made
+`internal`. A new public set of `Bind` methods replaces them.
 
 ### Binding API Methods
-| Method Signature | Description |
-| :--- | :--- |
-| `Bind<TConcrete>(...)` | Binds a type to itself. |
-| `Bind<TContract, TConcrete>(...)` | Binds a concrete type to a specific interface contract (supports overloads up to 7 contracts, e.g. `Bind<T1, T2, ..., TConcrete>`). |
-| `BindInstance(object instance)` | Registers an existing object instance as a singleton. |
-| `BindInstanceTo<T>(object instance)` | Registers an existing instance to a specific interface contract. |
-| `BindInterFaces<TConcrete>(...)` | Binds a type to all interfaces it implements. |
-| `BindInterFacesAndSelf<TConcrete>(...)` | Binds a type to all interfaces it implements, plus itself. |
-| `BindFactory<T, TFactory>(...)` | Registers a custom plain C# class factory. |
-| `BindMonoFactory<T, TFactory>(...)` | Registers a custom MonoBehaviour factory. |
-| `BindPool<T, TPool>(...)` | Registers a custom plain C# class pool. |
-| `BindMonoPool<T, TPool>(...)` | Registers a custom MonoBehaviour pool. |
+
+| Method Signature                        | Description                                                                                                                         |
+|:----------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------|
+| `Bind<TConcrete>(...)`                  | Binds a type to itself.                                                                                                             |
+| `Bind<TContract, TConcrete>(...)`       | Binds a concrete type to a specific interface contract (supports overloads up to 7 contracts, e.g. `Bind<T1, T2, ..., TConcrete>`). |
+| `BindInstance(object instance)`         | Registers an existing object instance as a singleton.                                                                               |
+| `BindInstanceTo<T>(object instance)`    | Registers an existing instance to a specific interface contract.                                                                    |
+| `BindInterFaces<TConcrete>(...)`        | Binds a type to all interfaces it implements.                                                                                       |
+| `BindInterFacesAndSelf<TConcrete>(...)` | Binds a type to all interfaces it implements, plus itself.                                                                          |
+| `BindFactory<T, TFactory>(...)`         | Registers a custom plain C# class factory.                                                                                          |
+| `BindMonoFactory<T, TFactory>(...)`     | Registers a custom MonoBehaviour factory.                                                                                           |
+| `BindPool<T, TPool>(...)`               | Registers a custom plain C# class pool.                                                                                             |
+| `BindMonoPool<T, TPool>(...)`           | Registers a custom MonoBehaviour pool.                                                                                              |
 
 ### Registration Examples
+
 ```csharp
 public class GameInstaller : MonoBehaviour, IInstaller
 {
@@ -517,10 +656,12 @@ public class GameInstaller : MonoBehaviour, IInstaller
 
         // 7. Mono Factory Bindings
         builder.BindMonoFactory<Enemy, EnemyFactory>(enemyPrefab);
-        
-        // 8. Pool Bindings
-        builder.BindPool<Bullet, Pool<Bullet>>();
-        builder.BindMonoPool<Enemy, MonoPool<Enemy>>(enemyPrefab);
+
+        // 8. C# Plain Pool Bindings
+        builder.BindPool<Bullet, BulletPool>();
+
+        // 9. Mono Pool Bindings
+        builder.BindMonoPool<Enemy, EnemyMonoPool>(enemyPrefab);
     }
 }
 ```
