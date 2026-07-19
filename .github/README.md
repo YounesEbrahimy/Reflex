@@ -29,7 +29,7 @@ This fork brings signature changes along with new features and quality-of-life i
 2. Click the **+** button → **Add package from git URL ...**
 3. Enter:
    ```
-   https://github.com/YounesEbrahimy/Reflex.git?path=/Assets/Reflex/#14.3.1
+   https://github.com/YounesEbrahimy/Reflex.git?path=/Assets/Reflex/#14.3.1.3
    ```
 
 ### Manual
