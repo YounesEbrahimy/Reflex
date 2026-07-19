@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Reflex.Enums;
 using Reflex.Factories.Mono;
+using Reflex.Factories.Plain;
 using Reflex.Generics;
+using Reflex.Pools;
+using Reflex.Pools.Mono;
 using Reflex.Resolvers;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -274,6 +277,24 @@ namespace Reflex.Core
 
         #region Factories
 
+        public void BindFactory<T, TFactory>(Lifetime lifeTime = Lifetime.Singleton,
+            Resolution resolution = Resolution.Lazy) where TFactory : BaseFactory<T>
+        {
+            if (typeof(MonoBehaviour).IsAssignableFrom(typeof(T)))
+                throw new InvalidOperationException(
+                    $"Cannot use BindFactory for MonoBehaviour types like {typeof(T).Name}. Use BindMonoFactory instead.");
+
+            RegisterFactory<TFactory>(CreateFactory, lifeTime, resolution);
+            return;
+
+            TFactory CreateFactory(Container container)
+            {
+                var factory = (TFactory)Activator.CreateInstance(typeof(TFactory));
+                factory.Setup(container);
+                return factory;
+            }
+        }
+
         public void BindMonoFactory<T, TFactory>(T original, bool hasFactoryScope = false,
             Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy)
             where TFactory : BaseMonoFactory<T> where T : MonoBehaviour
@@ -286,6 +307,43 @@ namespace Reflex.Core
                 var factory = (TFactory)Activator.CreateInstance(typeof(TFactory));
                 factory.Setup(container, original, hasFactoryScope);
                 return factory;
+            }
+        }
+
+        #endregion
+
+        #region Pools
+
+        public void BindPool<T, TPool>(int minSize = 0, int maxSize = int.MaxValue, int preWarmSize = 0,
+            Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy) where TPool : BasePool<T>
+        {
+            if (typeof(MonoBehaviour).IsAssignableFrom(typeof(T)))
+                throw new InvalidOperationException(
+                    $"Cannot use BindPool for MonoBehaviour types like {typeof(T).Name}. Use BindMonoPool instead.");
+
+            RegisterFactory<TPool>(CreatePool, lifeTime, resolution);
+            return;
+
+            TPool CreatePool(Container container)
+            {
+                var pool = (TPool)Activator.CreateInstance(typeof(TPool));
+                pool.Setup(container, minSize, maxSize, preWarmSize);
+                return pool;
+            }
+        }
+
+        public void BindMonoPool<T, TPool>(T prefab, int minSize = 0, int maxSize = int.MaxValue, int preWarmSize = 0,
+            Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy)
+            where TPool : BaseMonoPool<T> where T : MonoBehaviour
+        {
+            RegisterFactory<TPool>(CreateMonoPool, lifeTime, resolution);
+            return;
+
+            TPool CreateMonoPool(Container container)
+            {
+                var pool = (TPool)Activator.CreateInstance(typeof(TPool));
+                pool.Setup(container, prefab, minSize, maxSize, preWarmSize);
+                return pool;
             }
         }
 
