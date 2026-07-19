@@ -378,7 +378,7 @@ scope unique to that cloned instance.
 We introduced a comprehensive object pooling system to reuse objects dynamically, supporting both plain C# objects and
 Unity `MonoBehaviour` prefabs, featuring automatic lifecycle management and data propagation.
 
-### The Four Pool Types & Installer Bindings
+### C# Plain Pools
 
 #### A. Standard `Pool<T>`
 
@@ -488,7 +488,11 @@ public class Weapon
 }
 ```
 
-#### C. Standard `MonoPool<T>`
+---
+
+### Unity Mono Pools
+
+#### A. Standard `MonoPool<T>`
 
 Used to pool Unity prefabs without any runtime parameters. It dynamically manages GameObject activation and child-parent
 hierarchies in the scene.
@@ -543,7 +547,7 @@ public class Spawner : MonoBehaviour
 }
 ```
 
-#### D. Parameterized `MonoPool<TData, T>`
+#### B. Parameterized `MonoPool<TData, T>`
 
 Used to pool Unity prefabs while passing runtime data when taking objects from the pool. The component must implement
 `IData<TData>`.
