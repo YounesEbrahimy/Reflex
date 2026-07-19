@@ -280,6 +280,10 @@ namespace Reflex.Core
         public void BindFactory<T, TFactory>(Lifetime lifeTime = Lifetime.Singleton,
             Resolution resolution = Resolution.Lazy) where TFactory : BaseFactory<T>
         {
+            if (typeof(MonoBehaviour).IsAssignableFrom(typeof(T)))
+                throw new InvalidOperationException(
+                    $"Cannot use BindFactory for MonoBehaviour types like {typeof(T).Name}. Use BindMonoFactory instead.");
+
             RegisterFactory<TFactory>(CreateFactory, lifeTime, resolution);
             return;
 
@@ -313,6 +317,10 @@ namespace Reflex.Core
         public void BindPool<T, TPool>(int minSize = 0, int maxSize = int.MaxValue, int preWarmSize = 0,
             Lifetime lifeTime = Lifetime.Singleton, Resolution resolution = Resolution.Lazy) where TPool : BasePool<T>
         {
+            if (typeof(MonoBehaviour).IsAssignableFrom(typeof(T)))
+                throw new InvalidOperationException(
+                    $"Cannot use BindPool for MonoBehaviour types like {typeof(T).Name}. Use BindMonoPool instead.");
+
             RegisterFactory<TPool>(CreatePool, lifeTime, resolution);
             return;
 
