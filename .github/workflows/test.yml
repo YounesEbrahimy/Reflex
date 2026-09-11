@@ -55,6 +55,10 @@ jobs:
         if: always()
         run: /opt/unity/Editor/Unity -batchmode -nographics -returnlicense -logFile /dev/stdout -quit || true
 
+      - name: Fix git safe directory
+        if: ${{ !cancelled() }}
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
       - name: Test Report
         uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
