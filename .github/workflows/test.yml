@@ -59,10 +59,20 @@ jobs:
         if: ${{ !cancelled() }}
         run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
-      - name: Test Report
+      - name: EditMode Test Summary
         uses: dorny/test-reporter@v2
         if: ${{ !cancelled() }}
         with:
-          name: Unity Test Results
-          path: 'artifacts/*.xml'
+          name: EditMode Tests
+          path: 'artifacts/editmode-results.xml'
           reporter: dotnet-nunit
+          only-summary: 'true'
+
+      - name: PlayMode Test Summary
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: PlayMode Tests
+          path: 'artifacts/playmode-results.xml'
+          reporter: dotnet-nunit
+          only-summary: 'true'
