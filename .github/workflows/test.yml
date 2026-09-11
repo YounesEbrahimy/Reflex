@@ -7,6 +7,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  checks: write
+
 env:
   UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
   UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
@@ -51,9 +55,10 @@ jobs:
         if: always()
         run: /opt/unity/Editor/Unity -batchmode -nographics -returnlicense -logFile /dev/stdout -quit || true
 
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
         with:
-          name: unity-test-results
-          path: artifacts
+          name: Unity Test Results
+          path: 'artifacts/*.xml'
+          reporter: dotnet-nunit
