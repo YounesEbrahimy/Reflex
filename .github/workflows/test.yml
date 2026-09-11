@@ -38,7 +38,6 @@ jobs:
         with:
           projectPath: .
           unityVersion: auto
-          coverageOptions: useProjectSettings
           githubToken: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload test results
