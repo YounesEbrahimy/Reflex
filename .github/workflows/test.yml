@@ -7,15 +7,16 @@ on:
   pull_request:
     branches: [ main ]
 
-permissions:
-  contents: read
-  checks: write
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
 
 jobs:
   test:
     name: Run Unity Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
+    container:
+      image: unityci/editor:ubuntu-6000.0.67f1-linux-il2cpp-3
 
     steps:
       - name: Checkout repository
@@ -29,16 +30,25 @@ jobs:
           restore-keys: |
             Library-${{ runner.os }}-
 
-      - name: Run tests
-        uses: game-ci/unity-test-runner@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: .
-          unityVersion: auto
-          githubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Activate Unity
+        run: |
+          echo "$UNITY_LICENSE" > Unity_lic.ulf
+          /opt/unity/Editor/Unity -nographics -batchmode -manualLicenseFile Unity_lic.ulf -logFile /dev/stdout -quit || true
+
+      - name: Import project
+        run: /opt/unity/Editor/Unity -projectPath . -batchmode -nographics -quit -logFile /dev/stdout
+
+      - name: EditMode tests
+        run: |
+          mkdir -p artifacts
+          /opt/unity/Editor/Unity -projectPath . -batchmode -nographics -runTests -testPlatform EditMode -testResults artifacts/editmode-results.xml -logFile /dev/stdout
+
+      - name: PlayMode tests
+        run: /opt/unity/Editor/Unity -projectPath . -batchmode -nographics -runTests -testPlatform PlayMode -testResults artifacts/playmode-results.xml -logFile /dev/stdout
+
+      - name: Return license
+        if: always()
+        run: /opt/unity/Editor/Unity -batchmode -nographics -returnlicense -logFile /dev/stdout -quit || true
 
       - name: Upload test results
         if: always()
