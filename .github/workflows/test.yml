@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-${{ runner.os }}-${{ hashFiles('Packages/**', 'ProjectSettings/**') }}
+          key: Library-${{ runner.os }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
             Library-${{ runner.os }}-
 
