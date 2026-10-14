@@ -7,6 +7,7 @@ namespace Reflex.Utilities
             Undefined,
             Mono,
             IL2CPP,
+            CoreCLR
         }
 
         internal static Backend Current
@@ -17,6 +18,8 @@ namespace Reflex.Utilities
                 return Backend.Mono;
 #elif ENABLE_IL2CPP
 				return Backend.IL2CPP;
+#elif ENABLE_CORECLR
+                return Backend.CoreCLR;
 #else
 				return Backend.Undefined;
 #endif
